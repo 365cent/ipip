@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<title>GeoIP Lookup</title>
+	<style>
+		html {
+			scroll-behavior: smooth;
+			text-rendering: optimizeLegibility;
+		}
+
+		body {
+			font-family: "Avenir Next", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+			color: #fff;
+			margin: 0;
+		}
+
+		a:hover {
+			color: #0096e6;
+		}
+
+		h1 {
+			font-weight: 200;
+		}
+
+		header ul,
+		header summary,
+		main .info ul {
+			list-style: none;
+			padding: 0;
+		}
+
+		header {
+			position: fixed;
+			width: 100%;
+			background-color: rgba(0, 0, 0, .3);
+			backdrop-filter: saturate(180%) blur(5px);
+			box-shadow: inset 0 -1px 0 0 rgba(255, 255, 255, .1);
+		}
+
+		nav,
+		main .info>div {
+			display: flex;
+			width: 96%;
+			max-width: 1080px;
+			margin: 0 auto;
+		}
+
+		nav {
+
+			align-items: center;
+			justify-content: space-between;
+			height: 4em;
+		}
+
+		nav a {
+			display: block;
+			text-decoration: none;
+			color: inherit;
+			position: relative;
+		}
+
+		nav>ul {
+			display: flex;
+			gap: 2em;
+		}
+
+		nav>ul a:after {
+			content: "";
+			width: 0px;
+			height: 2px;
+			display: block;
+			background-color: currentColor;
+			transition: all 0.25s ease-in-out;
+		}
+
+		nav>ul a:hover:after {
+			width: 100%;
+		}
+
+		nav details {
+			display: none;
+		}
+
+		nav details ul {
+			align-items: center;
+			position: absolute;
+			margin: 0;
+			top: 3.35em;
+			left: 0;
+			width: 100vw;
+			padding: 0;
+			background-color: rgb(0 0 0 /.6);
+			backdrop-filter: saturate(180%) blur(500px);
+			box-shadow: inset 0 -1px 0 0 rgb(0 0 0 /.1);
+			font-size: 1.2em;
+		}
+
+		nav details li {
+			padding: 1em;
+		}
+
+		nav details[open] span:before {
+			transform: translate3d(0, 5px, 0) rotate(45deg);
+		}
+
+		nav details[open] span:after {
+			transform: translate3d(0, -5px, 0) rotate(-225deg);
+		}
+
+		nav summary span {
+			display: block;
+			position: relative;
+			width: 24px;
+			height: 12px;
+			margin-top: -5px;
+			cursor: pointer;
+		}
+
+		nav summary span:before,
+		nav summary span:after {
+			content: "";
+			position: absolute;
+			left: 0;
+			width: 100%;
+			height: 2px;
+			background-color: #fff;
+			transition: transform .25s;
+		}
+
+		nav summary span:before {
+			top: 0;
+		}
+
+		nav summary span:after {
+			bottom: 0;
+		}
+
+		main .hero {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 40vh;
+			width: 100%;
+			background: url(https://res.cloudinary.com/alt/image/upload/f_auto/v1667521145/ipip/bg_ewlnnn.jpg) no-repeat center 60%;
+			background-size: cover;
+		}
+
+		main .hero h2 {
+			max-width: 90vw;
+			transition: .25s;
+		}
+
+		main .hero h2:hover {
+			padding: .3em;
+			margin: -.3em;
+			background-color: rgb(255 255 255 /.3);
+			border-radius: .3em;
+		}
+
+		main .hero span:nth-child(2) {
+			color: #0096e6;
+			user-select: none;
+		}
+
+		main .info {
+			display: flex;
+			align-items: center;
+			position: relative;
+			background-color: rgb(4 150 255 /.4);
+			top: -10vh;
+			height: 10vh;
+		}
+
+		main .info>div {
+			position: relative;
+		}
+
+		main .poweredby {
+			position: absolute;
+			right: 0;
+			top: 0;
+			margin: .6em .3em;
+		}
+
+		main .poweredby a {
+			color: #0096e6;
+			text-decoration: none;
+			padding: .3em;
+			border: 1px solid #0096e6;
+			border-radius: .3em;
+			transition: .25s;
+		}
+
+		main .poweredby a:hover {
+			background-color: #0096e6;
+			color: #fff;
+		}
+
+		main .info ul {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(10%, 1fr));
+			width: 100%;
+		}
+
+		main .info ul li:nth-child(odd) {
+			font-size: 2em;
+		}
+
+		main .info ul li:nth-child(even) {
+			grid-column: span 4;
+		}
+
+		main .info ul li:nth-child(2) {
+			margin-right: 1em;
+			border-right: 1px solid #fff;
+		}
+
+		footer {
+			/* footer style by Vercel */
+			border-top: 1px solid rgb(234 234 234);
+			color: #292a2d;
+			background-color: #fafafa;
+			padding: 1em;
+			margin-top: 2em;
+		}
+
+		footer a {
+			color: #999;
+			text-decoration: none;
+			transition: color .25s;
+		}
+
+		footer a:hover {
+			color: #000;
+		}
+
+		footer p {
+			text-align: center;
+		}
+
+		@media (max-width: 40em) {
+			nav>ul {
+				display: none;
+			}
+
+			nav details {
+				display: block;
+			}
+
+			nav ul a {
+				width: 100%;
+			}
+
+			nav ul a:hover {
+				padding: .3em;
+				margin: -.3em;
+				color: #06c;
+				background-color: rgb(255 255 255 /.6);
+				border-radius: .3em;
+			}
+
+			main .info {
+				top: 0;
+				height: 100%;
+				background-color: #0096e6;
+			}
+
+			main .poweredby a {
+				margin: 0;
+				background-color: #fff;
+			}
+
+			main .poweredby a:hover {
+				border-color: #fff;
+			}
+
+			main .info ul {
+				display: grid;
+				grid-template-columns: 100%;
+			}
+
+			main .info ul li:nth-child(2) {
+				margin-right: 0;
+				border-right: none;
+				margin-bottom: 1em;
+				padding-bottom: 1em;
+				border-bottom: 1px solid #fff;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<header>
+		<nav>
+			<h1><a href="#">GeoIP Lookup</a></h1>
+			<ul>
+				<li><a href="https://ip.zxinc.org" target="_blank" rel="noopener noreferrer">ZX IP 库</a></li>
+				<li><a href="https://toys.soha.dev/zxip" target="_blank" rel="noopener noreferrer">Soha缝合版IP查询</a></li>
+			</ul>
+			<details>
+				<summary>
+					<span></span>
+				</summary>
+				<ul>
+					<li><a href="https://ip.zxinc.org" target="_blank" rel="noopener noreferrer">ZX IP 库</a></li>
+					<li><a href="https://toys.soha.dev/zxip" target="_blank" rel="noopener noreferrer">Soha缝合版IP查询</a>
+					</li>
+				</ul>
+			</details>
+		</nav>
+	</header>
+	<main>
+		<div class="hero">
+			<h2>
+				<span>127.0.0.1</span>
+				<span> / </span>
+				<span>::1</span>
+			</h2>
+		</div>
+		<div class="info">
+			<div>
+				<p class="poweredby"><a href="http://ip.zxinc.org/ipquery" target="_blank" rel="noopener noreferrer">ZX
+						IP 库</a></p>
+				<ul id="global">
+					<li>IPv4</li>
+					<li>
+						<span class="ip ipv4">Loading...</span>
+						<br />
+						<span class="loc ipv4"></span>
+					</li>
+					<li>IPv6</li>
+					<li>
+						<span class="ip ipv6">Loading...</span>
+						<br />
+						<span class="loc ipv6"></span>
+					</li>
+				</ul>
+			</div>
+			<!-- <table style="width: 100%;" id="global">
+				<tr>
+					<td>IPv4</td>
+					<td>
+						<span class="ip ipv4">Loading...</span>
+						<br />
+						<span class="loc ipv4"></span>
+					</td>
+				</tr>
+				<tr>
+					<td>IPv6</td>
+					<td>
+						<span class="ip ipv6">Loading...</span>
+						<br />
+						<span class="loc ipv6"></span>
+					</td>
+				</tr>
+			</table> -->
+		</div>
+	</main>
+	<footer>
+		<p>
+			基于<a href="https://ip.zxinc.org" target="_blank" rel="noopener noreferrer">ZX IP 库</a>, <a
+				href="https://toys.soha.dev/zxip" target="_blank" rel="noopener noreferrer">Soha缝合版IP查询</a> & <a
+				href="https://ipwhois.io" target="_blank" rel="noopener noreferrer">IPWhois</a>
+			由 <a href="https://mx.sb">M</a> 缝合
+		</p>
+	</footer>
+
+	<script>
+		window.JSON = window.JSON || {
+			parse: function (s) { return eval('(' + s + ')'); }
+		};
+		window.XMLHttpRequest = window.XMLHttpRequest || function () {
+			try { return new ActiveXObject('Microsoft.XMLHTTP'); }
+			catch (_) { throw new Error('XMLHttpRequest is not supported'); }
+		};
+		function doXHR(url, onSuccess, onError) {
+			var request = new XMLHttpRequest();
+			request.onreadystatechange = function () {
+				if (request.readyState !== 4) return;
+				if (request.status !== 200) {
+					onError(request);
+					return;
+				}
+				onSuccess(request);
+			};
+			request.open('GET', url);
+			request.send();
+		}
+		function setValue(block, type, fields) {
+			var $block = document.getElementById(block);
+			var $all = $block.all || $block.getElementsByClassName(type);
+			for (var i = 0; i < $all.length; i++) {
+				var $field = $all.item(i);
+				var fieldNames = $field.className.split(' ');
+				for (var j = 0; j < fieldNames.length; j++) {
+					if (fieldNames[j] === type) {
+						for (var j = 0; j < fieldNames.length; j++) {
+							var fieldName = fieldNames[j];
+							if (fields[fieldName]) {
+								if ($field.innerText) {
+									$field.innerText = fields[fieldName];
+								} else if (String.prototype.replace) {
+									$field.innerHTML = fields[fieldName].replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+								} else {
+									$field.innerHTML = fields[fieldName];
+								}
+								break;
+							}
+						}
+						break;
+					}
+				}
+			}
+		}
+		document.addEventListener('DOMContentLoaded', () => {
+			const ipv4 = document.querySelector('.hero h2 span:nth-child(1)');
+			const ipv6 = document.querySelector('.hero h2 span:nth-child(3)');
+			// var scheme = (!!window.ActiveXObject && !document.documentMode) ? document.location.protocol : '';
+			setTimeout(function getGlobalIP() {
+				doXHR(
+					'https://v4.ip.zxinc.org/info.php?type=json',
+					function (request) {
+						let { data } = JSON.parse(request.responseText);
+						ipv4.innerText = data.myip;
+						setValue('global', 'ipv4', { ip: data.myip, loc: data.location });
+					},
+					function (request) { setValue('global', 'ipv4', { ip: '无法识别', loc: '请求失败或不支持' }); }
+				);
+				doXHR(
+					'https://v6.ip.zxinc.org/info.php?type=json',
+					function (request) {
+						let { data } = JSON.parse(request.responseText);
+						ipv6.innerText = data.myip;
+						setValue('global', 'ipv6', { ip: data.myip, loc: data.location });
+					},
+					function (request) { setValue('global', 'ipv6', { ip: '无法识别', loc: '请求失败或不支持' }); }
+				);
+			}, 0);
+		});
+	</script>
+</body>
+
+</html>
